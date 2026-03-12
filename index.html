@@ -2,6 +2,20 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+<script>
+  const APP_VERSION = "20260312-1915"; // 每次改版手動換掉
+
+  (function () {
+    const url = new URL(window.location.href);
+    const current = url.searchParams.get("v");
+
+    if (current !== APP_VERSION) {
+      url.searchParams.set("v", APP_VERSION);
+      window.location.replace(url.toString());
+    }
+  })();
+</script>
+  
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>佑客家具 台北體驗館預約</title>
@@ -373,6 +387,7 @@
 </body>
 
 </html>
+
 
 
 
