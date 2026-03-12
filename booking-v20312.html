@@ -272,11 +272,7 @@
 
         liffReady = true;
 
-        setStatus(
-          "LINE 身分讀取成功\n" +
-          "LINE 暱稱：" + (profile.displayName || "") + "\n" +
-          "UserID：" + (profile.userId || ""),
-          "ok"
+        status.style.display = "none";
         );
       } catch (err) {
         setStatus(
