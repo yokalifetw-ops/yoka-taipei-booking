@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>佑客家具 台北體驗館預約</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f5f6f8;
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      color: #222;
+    }
+
+    .wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      line-height: 1.35;
+    }
+
+    .desc {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      margin-top: 18px;
+      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #d8dbe2;
+      border-radius: 12px;
+      padding: 13px 14px;
+      font-size: 16px;
+      background: #fff;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #06C755;
+      box-shadow: 0 0 0 3px rgba(6,199,85,0.12);
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .rule-box {
+      margin-top: 12px;
+      padding: 14px;
+      background: #fafafa;
+      border: 1px solid #ececec;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: #444;
+    }
+
+    .agree-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .agree-wrap input[type="checkbox"] {
+      margin-top: 3px;
+      transform: scale(1.2);
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: #06C755;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 15px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    .btn:disabled {
+      background: #9cd8b1;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: #333;
+      background: #f7f8fa;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .ok {
+      color: #137333;
+    }
+
+    .err {
+      color: #c5221f;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>佑客家具 台北體驗館預約</h1>
+    <div class="desc">
+      請填寫以下資料，送出後將透過 LINE 提供後續門禁資訊。
+    </div>
+
+    <label for="name">姓名 *</label>
+    <input id="name" type="text" placeholder="請輸入姓名">
+
+    <label for="phone">手機 *</label>
+    <input id="phone" type="tel" placeholder="請輸入手機">
+
+    <label for="visitDate">預約日期 *</label>
+    <input id="visitDate" type="date">
+
+    <label for="time">預約時段 *</label>
+    <select id="time">
+      <option value="">請選擇時段</option>
+      <option value="10:00-11:00">10:00-11:00</option>
+      <option value="11:00-12:00">11:00-12:00</option>
+      <option value="13:00-14:00">13:00-14:00</option>
+      <option value="14:00-15:00">14:00-15:00</option>
+      <option value="15:00-16:00">15:00-16:00</option>
+      <option value="16:00-17:00">16:00-17:00</option>
+      <option value="17:00-18:00">17:00-18:00</option>
+      <option value="18:00-19:00">18:00-19:00</option>
+    </select>
+
+    <label for="people">參觀人數</label>
+    <select id="people">
+      <option value="1">1人</option>
+      <option value="2">2人</option>
+      <option value="3">3人</option>
+      <option value="4+">4人以上</option>
+    </select>
+
+    <label for="product">想體驗的產品</label>
+    <select id="product">
+      <option value="">請選擇</option>
+      <option value="人體工學椅">人體工學椅</option>
+      <option value="主管椅">主管椅</option>
+      <option value="電競椅">電競椅</option>
+      <option value="辦公家具">辦公家具</option>
+      <option value="企業採購">企業採購</option>
+      <option value="其他">其他</option>
+    </select>
+
+    <label for="note">其他需求</label>
+    <textarea id="note" placeholder="例如：想試坐 Omni / H53"></textarea>
+
+    <div class="section-title">體驗館使用規範</div>
+    <div class="rule-box">
+      本館為無人展示體驗空間，全區設有監視錄影設備。<br>
+      1. 請勿攜帶飲食入內，並請共同維護展示空間與產品完整。<br>
+      2. 體驗館內椅款可自由調整與試坐，體驗完畢後請協助恢復原位。<br>
+      3. 同一時段可能有其他預約訪客，請互相尊重並保持良好參觀秩序。<br>
+      4. 門禁密碼僅限預約本人使用，請勿轉傳或提供他人使用。<br>
+      5. 體驗館位於地下一樓，上下樓梯時請留意自身安全。<br>
+      6. 若因不當使用設備或未依規範操作而造成產品損壞，須負相關賠償責任。
+    </div>
+
+    <div class="agree-wrap">
+      <input id="agree" type="checkbox">
+      <label for="agree" style="margin:0;font-weight:normal;">
+        我已閱讀並同意體驗館使用規範
+      </label>
+    </div>
+
+    <button id="submitBtn" class="btn" type="button" onclick="submitForm()">送出預約</button>
+
+    <div id="status" class="status">正在初始化 LINE 身分...</div>
+
+    <div class="hidden">
+      <input id="userId" type="text">
+      <input id="displayName" type="text">
+    </div>
+  </div>
+
+  <script>
+    const LIFF_ID = "2009269118-yjgdw5YM";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxllttk-pTdGsXXdhoJ1QXDdWLRLxr2rJIyf1D0KcwVpaoaPz_vFmQHZV0i-48tMVFZ/exec";
+
+    let liffReady = false;
+
+    function setStatus(message, type = "") {
+      const el = document.getElementById("status");
+      el.innerText = message;
+      el.className = "status";
+      if (type === "ok") el.classList.add("ok");
+      if (type === "err") el.classList.add("err");
+    }
+
+    async function initLIFF() {
+      try {
+        setStatus("1. 開始初始化 LIFF...");
+
+        await liff.init({ liffId: LIFF_ID });
+
+        setStatus("2. LIFF 初始化成功，正在檢查登入狀態...");
+
+        if (!liff.isLoggedIn()) {
+          setStatus("3. 尚未登入 LINE，正在導向登入...");
+          liff.login();
+          return;
+        }
+
+        setStatus("4. 已登入，正在取得 LINE 身分資料...");
+
+        const profile = await liff.getProfile();
+
+        document.getElementById("userId").value = profile.userId || "";
+        document.getElementById("displayName").value = profile.displayName || "";
+
+        liffReady = true;
+
+        setStatus(
+          "LINE 身分讀取成功\n" +
+          "LINE 暱稱：" + (profile.displayName || "") + "\n" +
+          "UserID：" + (profile.userId || ""),
+          "ok"
+        );
+      } catch (err) {
+        setStatus(
+          "LIFF 初始化失敗\n" +
+          "message: " + (err.message || err) + "\n" +
+          "目前網址: " + location.href,
+          "err"
+        );
+      }
+    }
+
+    function validateForm() {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const visitDate = document.getElementById("visitDate").value;
+      const time = document.getElementById("time").value;
+      const agree = document.getElementById("agree").checked;
+
+      if (!liffReady) {
+        alert("LINE 身分尚未初始化完成，請先查看下方狀態訊息。");
+        return false;
+      }
+
+      if (!name) {
+        alert("請輸入姓名");
+        return false;
+      }
+
+      if (!phone) {
+        alert("請輸入手機");
+        return false;
+      }
+
+      if (!visitDate) {
+        alert("請選擇預約日期");
+        return false;
+      }
+
+      if (!time) {
+        alert("請選擇預約時段");
+        return false;
+      }
+
+      if (!agree) {
+        alert("請先勾選同意體驗館使用規範");
+        return false;
+      }
+
+      return true;
+    }
+
+    async function submitForm() {
+      if (!validateForm()) return;
+
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      setStatus("資料送出中，請稍候...");
+
+      const data = {
+        userId: document.getElementById("userId").value,
+        displayName: document.getElementById("displayName").value,
+        name: document.getElementById("name").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        visitDate: document.getElementById("visitDate").value,
+        time: document.getElementById("time").value,
+        people: document.getElementById("people").value,
+        product: document.getElementById("product").value,
+        note: document.getElementById("note").value.trim()
+      };
+
+      try {
+        const res = await fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(data)
+        });
+
+        const text = await res.text();
+
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status + " / " + text);
+        }
+
+        if (text.indexOf("ERROR") > -1) {
+          throw new Error(text);
+        }
+
+        setStatus("預約送出成功，資料已寫入系統。", "ok");
+        alert("預約送出成功");
+
+        if (liff.isInClient()) {
+          liff.closeWindow();
+        }
+      } catch (err) {
+        setStatus("送出失敗：\n" + (err.message || err), "err");
+        alert("送出失敗，請稍後再試");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    initLIFF();
+  </script>
+</body>
+</html>
