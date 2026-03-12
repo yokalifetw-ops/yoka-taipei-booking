@@ -247,42 +247,40 @@
     }
 
     async function initLIFF() {
-      try {
-        setStatus("1. 開始初始化 LIFF...");
+  try {
+    setStatus("1. 開始初始化 LIFF...");
 
-        await liff.init({ liffId: LIFF_ID });
+    await liff.init({ liffId: LIFF_ID });
 
-        // LIFF init 成功後再做版本跳轉，避免影響初始化
-        if (!ensureLatestVersion()) return;
+    if (!ensureLatestVersion()) return;
 
-        setStatus("2. LIFF 初始化成功，正在檢查登入狀態...");
+    setStatus("2. LIFF 初始化成功，正在檢查登入狀態...");
 
-        if (!liff.isLoggedIn()) {
-          setStatus("3. 尚未登入 LINE，正在導向登入...");
-          liff.login();
-          return;
-        }
-
-        setStatus("4. 已登入，正在取得 LINE 身分資料...");
-
-        const profile = await liff.getProfile();
-
-        document.getElementById("userId").value = profile.userId || "";
-        document.getElementById("displayName").value = profile.displayName || "";
-
-        liffReady = true;
-
-        status.style.display = "none";
-        );
-      } catch (err) {
-        setStatus(
-          "LIFF 初始化失敗\n" +
-          "message: " + (err.message || err) + "\n" +
-          "目前網址: " + location.href,
-          "err"
-        );
-      }
+    if (!liff.isLoggedIn()) {
+      setStatus("3. 尚未登入 LINE，正在導向登入...");
+      liff.login();
+      return;
     }
+
+    setStatus("4. 已登入，正在取得 LINE 身分資料...");
+
+    const profile = await liff.getProfile();
+
+    document.getElementById("userId").value = profile.userId || "";
+    document.getElementById("displayName").value = profile.displayName || "";
+
+    liffReady = true;
+
+    document.getElementById("status").style.display = "none";
+  } catch (err) {
+    setStatus(
+      "LIFF 初始化失敗\n" +
+      "message: " + (err.message || err) + "\n" +
+      "目前網址: " + location.href,
+      "err"
+    );
+  }
+}
 
     function validateForm() {
       const name = document.getElementById("name").value.trim();
