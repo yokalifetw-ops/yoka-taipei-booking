@@ -1,21 +1,6 @@
-</div>
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<script>
-  const APP_VERSION = "20260312-1916"; // 每次改版手動換掉
-
-  (function () {
-    const url = new URL(window.location.href);
-    const current = url.searchParams.get("v");
-
-    if (current !== APP_VERSION) {
-      url.searchParams.set("v", APP_VERSION);
-      window.location.replace(url.toString());
-    }
-  })();
-</script>
-  
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>佑客家具 台北體驗館預約</title>
@@ -71,6 +56,7 @@
     input[type="text"],
     input[type="tel"],
     input[type="date"],
+    input[type="time"],
     select,
     textarea {
       width: 100%;
@@ -156,12 +142,6 @@
       color: #c5221f;
     }
 
-    .small {
-      font-size: 12px;
-      color: #888;
-      margin-top: 4px;
-    }
-
     .hidden {
       display: none;
     }
@@ -184,8 +164,7 @@
     <input id="visitDate" type="date">
 
     <label for="time">預約時間 *</label>
-    <input id="time" type="time" required>
-    </select>
+    <input id="time" type="time" min="10:00" max="19:00" required>
 
     <label for="people">參觀人數</label>
     <select id="people">
@@ -240,6 +219,7 @@
   <script>
     const LIFF_ID = "2009269118-yjgdw5YM";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxllttk-pTdGsXXdhoJ1QXDdWLRLxr2rJIyf1D0KcwVpaoaPz_vFmQHZV0i-48tMVFZ/exec";
+    const APP_VERSION = "20260312-1925";        ///////之後只要有改版，把這一行一起改掉
 
     let liffReady = false;
 
@@ -251,11 +231,26 @@
       if (type === "err") el.classList.add("err");
     }
 
+    function ensureLatestVersion() {
+      const url = new URL(window.location.href);
+      const currentVersion = url.searchParams.get("v");
+
+      if (currentVersion !== APP_VERSION) {
+        url.searchParams.set("v", APP_VERSION);
+        window.location.replace(url.toString());
+        return false;
+      }
+      return true;
+    }
+
     async function initLIFF() {
       try {
         setStatus("1. 開始初始化 LIFF...");
 
         await liff.init({ liffId: LIFF_ID });
+
+        // LIFF init 成功後再做版本跳轉，避免影響初始化
+        if (!ensureLatestVersion()) return;
 
         setStatus("2. LIFF 初始化成功，正在檢查登入狀態...");
 
@@ -318,7 +313,7 @@
       }
 
       if (!time) {
-        alert("請選擇預約時段");
+        alert("請選擇預約時間");
         return false;
       }
 
@@ -385,13 +380,4 @@
     initLIFF();
   </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
-
