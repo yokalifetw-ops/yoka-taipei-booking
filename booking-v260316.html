@@ -527,42 +527,24 @@
       return true;
     }
 
-    function buildTimeSlot(startTime) {
-      const parts = startTime.split(":");
-      let hour = parseInt(parts[0], 10);
-      let minute = parseInt(parts[1], 10);
-
-      minute += 30;
-      if (minute >= 60) {
-        hour += 1;
-        minute -= 60;
-      }
-
-      const endHour = String(hour).padStart(2, "0");
-      const endMinute = String(minute).padStart(2, "0");
-
-      return startTime + "-" + endHour + ":" + endMinute;
-    }
-
     async function submitForm() {
       if (!validateForm()) return;
 
       setSubmitLoading(true);
       setStatus("資料送出中，請稍候...");
 
-      const startTime = document.getElementById("time").value;
-      const timeSlot = buildTimeSlot(startTime);
+      const bookingTime = document.getElementById("time").value;
 
       const payload = {
-        "LINE UserID": document.getElementById("userId").value,
-        "LINE 暱稱": document.getElementById("displayName").value,
-        "姓名": document.getElementById("name").value.trim(),
-        "手機": document.getElementById("phone").value.trim(),
-        "預約日期": document.getElementById("visitDate").value,
-        "預約時段": timeSlot,
-        "參觀人數": document.getElementById("people").value,
-        "體驗產品": document.getElementById("product").value,
-        "備註": document.getElementById("note").value.trim()
+         "LINE UserID": document.getElementById("userId").value,
+         "LINE 暱稱": document.getElementById("displayName").value,
+         "姓名": document.getElementById("name").value.trim(),
+         "手機": document.getElementById("phone").value.trim(),
+         "預約日期": document.getElementById("visitDate").value,
+         "預約時段": bookingTime,
+         "參觀人數": document.getElementById("people").value,
+         "體驗產品": document.getElementById("product").value,
+         "備註": document.getElementById("note").value.trim()
       };
 
       try {
