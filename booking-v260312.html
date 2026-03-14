@@ -507,61 +507,237 @@
       return true;
     }
 
-    async function submitForm() {
-      if (!validateForm()) return;
+    <script>
+  const LIFF_ID = "2009269118-yjgdw5YM";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxllttk-pTdGsXXdhoJ1QXDdWLRLxr2rJIyf1D0KcwVpaoaPz_vFmQHZV0i-48tMVFZ/exec";
+  const APP_VERSION = "20260312-2005";
 
-      setSubmitLoading(true);
-      setStatus("資料送出中，請稍候...");
+  let liffReady = false;
 
-      const data = {
-        userId: document.getElementById("userId").value,
-        displayName: document.getElementById("displayName").value,
-        name: document.getElementById("name").value.trim(),
-        phone: document.getElementById("phone").value.trim(),
-        visitDate: document.getElementById("visitDate").value,
-        time: document.getElementById("time").value,
-        people: document.getElementById("people").value,
-        product: document.getElementById("product").value,
-        note: document.getElementById("note").value.trim()
-      };
+  function setStatus(message, type = "") {
+    const el = document.getElementById("status");
+    el.innerText = message;
+    el.className = "status";
+    if (type === "ok") el.classList.add("ok");
+    if (type === "err") el.classList.add("err");
+  }
 
-      try {
-        const res = await fetch(WEB_APP_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify(data)
-        });
+  function ensureLatestVersion() {
+    const url = new URL(window.location.href);
+    const currentVersion = url.searchParams.get("v");
 
-        const text = await res.text();
-
-        if (!res.ok) {
-          throw new Error("HTTP " + res.status + " / " + text);
-        }
-
-        if (text.indexOf("ERROR") > -1) {
-          throw new Error(text);
-        }
-
-        setStatus("預約送出成功，資料已寫入系統。", "ok");
-
-        showModal(
-          "預約成功",
-          "您的預約已送出。\n後續門禁資訊將透過 LINE 通知。",
-          function() {
-            if (liff.isInClient()) {
-              liff.closeWindow();
-            }
-          }
-        );
-      } catch (err) {
-        setStatus("送出失敗：\n" + (err.message || err), "err");
-        showModal("送出失敗", "系統暫時無法送出，請稍後再試。");
-      } finally {
-        setSubmitLoading(false);
-      }
+    if (currentVersion !== APP_VERSION) {
+      url.searchParams.set("v", APP_VERSION);
+      window.location.replace(url.toString());
+      return false;
     }
+    return true;
+  }
+
+  function showModal(title, text, onConfirm = null, showCancel = false) {
+    document.getElementById("modalTitle").innerText = title;
+    document.getElementById("modalText").innerText = text;
+
+    const modal = document.getElementById("modal");
+    const confirmBtn = document.getElementById("modalConfirmBtn");
+    const cancelBtn = document.getElementById("modalCancelBtn");
+
+    confirmBtn.onclick = function() {
+      closeModal();
+      if (typeof onConfirm === "function") onConfirm();
+    };
+
+    if (showCancel) {
+      cancelBtn.classList.remove("hidden");
+      cancelBtn.onclick = closeModal;
+    } else {
+      cancelBtn.classList.add("hidden");
+    }
+
+    modal.classList.add("show");
+  }
+
+  function closeModal() {
+    document.getElementById("modal").classList.remove("show");
+  }
+
+  function setSubmitLoading(isLoading) {
+    const btn = document.getElementById("submitBtn");
+
+    if (isLoading) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-inline"><span class="spinner"></span>送出中...</span>';
+    } else {
+      btn.disabled = false;
+      btn.innerText = "送出預約";
+    }
+  }
+
+  async function initLIFF() {
+    try {
+      setStatus("1. 開始初始化 LINE 身分...");
+
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!ensureLatestVersion()) return;
+
+      setStatus("2. LINE 身分初始化成功，正在檢查登入狀態...");
+
+      if (!liff.isLoggedIn()) {
+        setStatus("3. 尚未登入 LINE，正在導向登入...");
+        liff.login();
+        return;
+      }
+
+      setStatus("4. 已登入，正在取得 LINE 身分資料...");
+
+      const profile = await liff.getProfile();
+
+      document.getElementById("userId").value = profile.userId || "";
+      document.getElementById("displayName").value = profile.displayName || "";
+
+      liffReady = true;
+      document.getElementById("status").style.display = "none";
+    } catch (err) {
+      setStatus(
+        "LINE 初始化失敗\n" +
+        "message: " + (err.message || err) + "\n" +
+        "目前網址: " + location.href,
+        "err"
+      );
+    }
+  }
+
+  function validateForm() {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const visitDate = document.getElementById("visitDate").value;
+    const time = document.getElementById("time").value;
+    const agree = document.getElementById("agree").checked;
+
+    if (!liffReady) {
+      showModal("系統尚未完成", "LINE 身分尚未初始化完成，請稍候幾秒後再試。");
+      return false;
+    }
+
+    if (!name) {
+      showModal("請補填資料", "請輸入姓名");
+      return false;
+    }
+
+    if (!phone) {
+      showModal("請補填資料", "請輸入手機");
+      return false;
+    }
+
+    if (!visitDate) {
+      showModal("請補填資料", "請選擇預約日期");
+      return false;
+    }
+
+    if (!time) {
+      showModal("請補填資料", "請選擇預約時間");
+      return false;
+    }
+
+    if (!agree) {
+      showModal("請確認規範", "請先勾選同意體驗館使用規範");
+      return false;
+    }
+
+    return true;
+  }
+
+  // 把單一時間轉成 30 分鐘時段，例如 15:00 -> 15:00-15:30
+  function buildTimeSlot(startTime) {
+    const [hourStr, minuteStr] = startTime.split(":");
+    let hour = parseInt(hourStr, 10);
+    let minute = parseInt(minuteStr, 10);
+
+    minute += 30;
+    if (minute >= 60) {
+      hour += 1;
+      minute -= 60;
+    }
+
+    const endHour = String(hour).padStart(2, "0");
+    const endMinute = String(minute).padStart(2, "0");
+
+    return `${startTime}-${endHour}:${endMinute}`;
+  }
+
+  async function submitForm() {
+    if (!validateForm()) return;
+
+    setSubmitLoading(true);
+    setStatus("資料送出中，請稍候...");
+
+    const startTime = document.getElementById("time").value;
+    const timeSlot = buildTimeSlot(startTime);
+
+    const payload = {
+      "LINE UserID": document.getElementById("userId").value,
+      "LINE 暱稱": document.getElementById("displayName").value,
+      "姓名": document.getElementById("name").value.trim(),
+      "手機": document.getElementById("phone").value.trim(),
+      "預約日期": document.getElementById("visitDate").value,
+      "預約時段": timeSlot,
+      "參觀人數": document.getElementById("people").value,
+      "體驗產品": document.getElementById("product").value,
+      "備註": document.getElementById("note").value.trim()
+    };
+
+    console.log("送出 payload：", payload);
+
+    try {
+      const res = await fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const text = await res.text();
+      console.log("Apps Script 回傳：", text);
+
+      let result = {};
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        throw new Error("回傳格式不是 JSON：" + text);
+      }
+
+      if (!res.ok) {
+        throw new Error("HTTP " + res.status + " / " + text);
+      }
+
+      if (!result.ok) {
+        throw new Error(result.message || result.error || "未知錯誤");
+      }
+
+      setStatus("預約送出成功，資料已寫入系統。", "ok");
+
+      showModal(
+        "預約成功",
+        "您的預約已送出。\n後續門禁資訊將透過 LINE 通知。",
+        function() {
+          if (liff.isInClient()) {
+            liff.closeWindow();
+          }
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      setStatus("送出失敗：\n" + (err.message || err), "err");
+      showModal("送出失敗", "系統暫時無法送出：\n" + (err.message || err));
+    } finally {
+      setSubmitLoading(false);
+    }
+  }
+
+  initLIFF();
+</script>
 
     initLIFF();
   </script>
