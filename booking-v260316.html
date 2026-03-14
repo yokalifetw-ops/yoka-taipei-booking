@@ -286,7 +286,7 @@
     </div>
 
     <div class="top-note">
-      預約完成後，系統將立即發送預約成功通知，並於預約開始前約 30 分鐘發送開門按鈕。
+      預約完成後，系統將立即發送預約成功通知，並於預約時間前約 30 分鐘發送開門按鈕。
     </div>
 
     <label for="name">姓名 *</label>
@@ -300,8 +300,8 @@
     <input id="visitDate" type="date">
 
     <label for="time">預約時間 *</label>
-    <input id="time" type="time" min="00:00" max="23:30" step="1800" required>
-    <div class="hint">開放預約時段：24H，每次 30 分鐘</div>
+    <input id="time" type="time" min="00:00" max="23:59" step="1800" required>
+    <div class="hint">開放預約時間：24H，請選擇預約時間</div>
 
     <label for="people">體驗人數</label>
     <select id="people">
@@ -365,7 +365,7 @@
   <script>
     const LIFF_ID = "2009269118-yjgdw5YM";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZUhXgLIKU7etk9_Edg6Rm8QnYmoj1RyjWuEDNvJP4iUyLaNlewqHFhcrlZAMTcWOl/exec";
-    const APP_VERSION = "20260314-002";
+    const APP_VERSION = "20260314-003";
 
     let liffReady = false;
 
@@ -536,15 +536,15 @@
       const bookingTime = document.getElementById("time").value;
 
       const payload = {
-         "LINE UserID": document.getElementById("userId").value,
-         "LINE 暱稱": document.getElementById("displayName").value,
-         "姓名": document.getElementById("name").value.trim(),
-         "手機": document.getElementById("phone").value.trim(),
-         "預約日期": document.getElementById("visitDate").value,
-         "預約時段": bookingTime,
-         "參觀人數": document.getElementById("people").value,
-         "體驗產品": document.getElementById("product").value,
-         "備註": document.getElementById("note").value.trim()
+        "LINE UserID": document.getElementById("userId").value,
+        "LINE 暱稱": document.getElementById("displayName").value,
+        "姓名": document.getElementById("name").value.trim(),
+        "手機": document.getElementById("phone").value.trim(),
+        "預約日期": document.getElementById("visitDate").value,
+        "預約時段": bookingTime,
+        "參觀人數": document.getElementById("people").value,
+        "體驗產品": document.getElementById("product").value,
+        "備註": document.getElementById("note").value.trim()
       };
 
       try {
