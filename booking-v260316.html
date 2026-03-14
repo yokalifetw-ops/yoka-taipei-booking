@@ -279,7 +279,7 @@
   <div class="wrap">
     <div class="brand-badge">YOKA｜台北體驗館</div>
 
-    <h1>YOKA 佑客家具 </h1>
+    <h1>YOKA 佑客家具</h1>
     <h1>台北體驗館預約</h1>
 
     <div class="desc">
@@ -301,8 +301,8 @@
     <input id="visitDate" type="date">
 
     <label for="time">預約時間 *</label>
-    <input id="time" type="time" min="10:00" max="19:00" required>
-    <div class="hint">開放預約時段：24H</div>
+    <input id="time" type="time" min="00:00" max="23:30" step="1800" required>
+    <div class="hint">開放預約時段：24H，每次 30 分鐘</div>
 
     <label for="people">體驗人數</label>
     <select id="people">
@@ -355,7 +355,6 @@
     </div>
   </div>
 
-  <!-- 自訂彈窗 -->
   <div id="modal" class="modal">
     <div class="modal-box">
       <div id="modalTitle" class="modal-title">提醒</div>
@@ -366,243 +365,243 @@
   </div>
 
   <script>
-  const LIFF_ID = "2009269118-yjgdw5YM";
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZUhXgLIKU7etk9_Edg6Rm8QnYmoj1RyjWuEDNvJP4iUyLaNlewqHFhcrlZAMTcWOl/exec";
-  const APP_VERSION = "20260312-2005";
+    const LIFF_ID = "2009269118-yjgdw5YM";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZUhXgLIKU7etk9_Edg6Rm8QnYmoj1RyjWuEDNvJP4iUyLaNlewqHFhcrlZAMTcWOl/exec";
+    const APP_VERSION = "20260312-2005";
 
-  let liffReady = false;
+    let liffReady = false;
 
-  function setStatus(message, type = "") {
-    const el = document.getElementById("status");
-    el.innerText = message;
-    el.className = "status";
-    if (type === "ok") el.classList.add("ok");
-    if (type === "err") el.classList.add("err");
-  }
-
-  function ensureLatestVersion() {
-    const url = new URL(window.location.href);
-    const currentVersion = url.searchParams.get("v");
-
-    if (currentVersion !== APP_VERSION) {
-      url.searchParams.set("v", APP_VERSION);
-      window.location.replace(url.toString());
-      return false;
-    }
-    return true;
-  }
-
-  function showModal(title, text, onConfirm = null, showCancel = false) {
-    document.getElementById("modalTitle").innerText = title;
-    document.getElementById("modalText").innerText = text;
-
-    const modal = document.getElementById("modal");
-    const confirmBtn = document.getElementById("modalConfirmBtn");
-    const cancelBtn = document.getElementById("modalCancelBtn");
-
-    confirmBtn.onclick = function () {
-      closeModal();
-      if (typeof onConfirm === "function") onConfirm();
-    };
-
-    if (showCancel) {
-      cancelBtn.classList.remove("hidden");
-      cancelBtn.onclick = closeModal;
-    } else {
-      cancelBtn.classList.add("hidden");
+    function setStatus(message, type = "") {
+      const el = document.getElementById("status");
+      el.innerText = message;
+      el.className = "status";
+      if (type === "ok") el.classList.add("ok");
+      if (type === "err") el.classList.add("err");
     }
 
-    modal.classList.add("show");
-  }
+    function ensureLatestVersion() {
+      const url = new URL(window.location.href);
+      const currentVersion = url.searchParams.get("v");
 
-  function closeModal() {
-    document.getElementById("modal").classList.remove("show");
-  }
-
-  function setSubmitLoading(isLoading) {
-    const btn = document.getElementById("submitBtn");
-
-    if (isLoading) {
-      btn.disabled = true;
-      btn.innerHTML = '<span class="loading-inline"><span class="spinner"></span>送出中...</span>';
-    } else {
-      btn.disabled = false;
-      btn.innerText = "送出預約";
+      if (currentVersion !== APP_VERSION) {
+        url.searchParams.set("v", APP_VERSION);
+        window.location.replace(url.toString());
+        return false;
+      }
+      return true;
     }
-  }
 
-  async function initLIFF() {
-    try {
-      setStatus("1. 開始初始化 LINE 身分...");
+    function showModal(title, text, onConfirm = null, showCancel = false) {
+      document.getElementById("modalTitle").innerText = title;
+      document.getElementById("modalText").innerText = text;
 
-      await liff.init({ liffId: LIFF_ID });
+      const modal = document.getElementById("modal");
+      const confirmBtn = document.getElementById("modalConfirmBtn");
+      const cancelBtn = document.getElementById("modalCancelBtn");
 
-      if (!ensureLatestVersion()) return;
+      confirmBtn.onclick = function () {
+        closeModal();
+        if (typeof onConfirm === "function") onConfirm();
+      };
 
-      setStatus("2. LINE 身分初始化成功，正在檢查登入狀態...");
-
-      if (!liff.isLoggedIn()) {
-        setStatus("3. 尚未登入 LINE，正在導向登入...");
-        liff.login();
-        return;
+      if (showCancel) {
+        cancelBtn.classList.remove("hidden");
+        cancelBtn.onclick = closeModal;
+      } else {
+        cancelBtn.classList.add("hidden");
       }
 
-      setStatus("4. 已登入，正在取得 LINE 身分資料...");
-
-      const profile = await liff.getProfile();
-
-      document.getElementById("userId").value = profile.userId || "";
-      document.getElementById("displayName").value = profile.displayName || "";
-
-      liffReady = true;
-      document.getElementById("status").style.display = "none";
-    } catch (err) {
-      setStatus(
-        "LINE 初始化失敗\n" +
-        "message: " + (err.message || err) + "\n" +
-        "目前網址: " + location.href,
-        "err"
-      );
-    }
-  }
-
-  function validateForm() {
-    const name = document.getElementById("name").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const visitDate = document.getElementById("visitDate").value;
-    const time = document.getElementById("time").value;
-    const agree = document.getElementById("agree").checked;
-
-    if (!liffReady) {
-      showModal("系統尚未完成", "LINE 身分尚未初始化完成，請稍候幾秒後再試。");
-      return false;
+      modal.classList.add("show");
     }
 
-    if (!name) {
-      showModal("請補填資料", "請輸入姓名");
-      return false;
+    function closeModal() {
+      document.getElementById("modal").classList.remove("show");
     }
 
-    if (!phone) {
-      showModal("請補填資料", "請輸入手機");
-      return false;
+    function setSubmitLoading(isLoading) {
+      const btn = document.getElementById("submitBtn");
+
+      if (isLoading) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-inline"><span class="spinner"></span>送出中...</span>';
+      } else {
+        btn.disabled = false;
+        btn.innerText = "送出預約";
+      }
     }
 
-    if (!visitDate) {
-      showModal("請補填資料", "請選擇預約日期");
-      return false;
-    }
-
-    if (!time) {
-      showModal("請補填資料", "請選擇預約時間");
-      return false;
-    }
-
-    if (!agree) {
-      showModal("請確認規範", "請先勾選同意體驗館使用規範");
-      return false;
-    }
-
-    return true;
-  }
-
-  function buildTimeSlot(startTime) {
-    const parts = startTime.split(":");
-    let hour = parseInt(parts[0], 10);
-    let minute = parseInt(parts[1], 10);
-
-    minute += 30;
-    if (minute >= 60) {
-      hour += 1;
-      minute -= 60;
-    }
-
-    const endHour = String(hour).padStart(2, "0");
-    const endMinute = String(minute).padStart(2, "0");
-
-    return startTime + "-" + endHour + ":" + endMinute;
-  }
-
-  async function submitForm() {
-    if (!validateForm()) return;
-
-    setSubmitLoading(true);
-    setStatus("資料送出中，請稍候...");
-
-    const startTime = document.getElementById("time").value;
-    const timeSlot = buildTimeSlot(startTime);
-
-    const payload = {
-      "LINE UserID": document.getElementById("userId").value,
-      "LINE 暱稱": document.getElementById("displayName").value,
-      "姓名": document.getElementById("name").value.trim(),
-      "手機": document.getElementById("phone").value.trim(),
-      "預約日期": document.getElementById("visitDate").value,
-      "預約時段": timeSlot,
-      "參觀人數": document.getElementById("people").value,
-      "體驗產品": document.getElementById("product").value,
-      "備註": document.getElementById("note").value.trim()
-    };
-
-    console.log("送出 payload：", payload);
-
-    try {
-      const res = await fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const text = await res.text();
-      console.log("Apps Script 回傳：", text);
-
-      let result = {};
+    async function initLIFF() {
       try {
-        result = JSON.parse(text);
-      } catch (e) {
-        throw new Error("回傳格式不是 JSON：" + text);
-      }
+        setStatus("1. 開始初始化 LINE 身分...");
 
-      if (!res.ok) {
-        throw new Error("HTTP " + res.status + " / " + text);
-      }
+        await liff.init({ liffId: LIFF_ID });
 
-      if (!result.ok) {
-        throw new Error(result.message || result.error || "未知錯誤");
-      }
+        if (!ensureLatestVersion()) return;
 
-      setStatus("預約送出成功，資料已寫入系統。", "ok");
+        setStatus("2. LINE 身分初始化成功，正在檢查登入狀態...");
 
-      showModal(
-        "預約成功",
-        "您的預約已送出。\n後續門禁資訊將透過 LINE 通知。",
-        function () {
-          if (liff.isInClient()) {
-            liff.closeWindow();
-          }
+        if (!liff.isLoggedIn()) {
+          setStatus("3. 尚未登入 LINE，正在導向登入...");
+          liff.login();
+          return;
         }
-      );
-    } catch (err) {
-  console.error("submitForm error =", err);
-  console.error("error name =", err?.name);
-  console.error("error message =", err?.message);
 
-  const msg =
-    "name: " + (err?.name || "") + "\n" +
-    "message: " + (err?.message || err || "");
+        setStatus("4. 已登入，正在取得 LINE 身分資料...");
 
-  setStatus("送出失敗：\n" + msg, "err");
-  showModal("送出失敗", "系統暫時無法送出：\n" + msg);
-} finally {
-      setSubmitLoading(false);
+        const profile = await liff.getProfile();
+
+        document.getElementById("userId").value = profile.userId || "";
+        document.getElementById("displayName").value = profile.displayName || "";
+
+        liffReady = true;
+        document.getElementById("status").style.display = "none";
+      } catch (err) {
+        setStatus(
+          "LINE 初始化失敗\n" +
+          "message: " + (err.message || err) + "\n" +
+          "目前網址: " + location.href,
+          "err"
+        );
+      }
     }
-  }
 
-  window.onload = function () {
-    initLIFF();
-  };
-</script>
+    function validateForm() {
+      const name = document.getElementById("name").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const visitDate = document.getElementById("visitDate").value;
+      const time = document.getElementById("time").value;
+      const agree = document.getElementById("agree").checked;
+
+      if (!liffReady) {
+        showModal("系統尚未完成", "LINE 身分尚未初始化完成，請稍候幾秒後再試。");
+        return false;
+      }
+
+      if (!name) {
+        showModal("請補填資料", "請輸入姓名");
+        return false;
+      }
+
+      if (!phone) {
+        showModal("請補填資料", "請輸入手機");
+        return false;
+      }
+
+      if (!visitDate) {
+        showModal("請補填資料", "請選擇預約日期");
+        return false;
+      }
+
+      if (!time) {
+        showModal("請補填資料", "請選擇預約時間");
+        return false;
+      }
+
+      if (!agree) {
+        showModal("請確認規範", "請先勾選同意體驗館使用規範");
+        return false;
+      }
+
+      return true;
+    }
+
+    function buildTimeSlot(startTime) {
+      const parts = startTime.split(":");
+      let hour = parseInt(parts[0], 10);
+      let minute = parseInt(parts[1], 10);
+
+      minute += 30;
+      if (minute >= 60) {
+        hour += 1;
+        minute -= 60;
+      }
+
+      const endHour = String(hour).padStart(2, "0");
+      const endMinute = String(minute).padStart(2, "0");
+
+      return startTime + "-" + endHour + ":" + endMinute;
+    }
+
+    async function submitForm() {
+      if (!validateForm()) return;
+
+      setSubmitLoading(true);
+      setStatus("資料送出中，請稍候...");
+
+      const startTime = document.getElementById("time").value;
+      const timeSlot = buildTimeSlot(startTime);
+
+      const payload = {
+        "LINE UserID": document.getElementById("userId").value,
+        "LINE 暱稱": document.getElementById("displayName").value,
+        "姓名": document.getElementById("name").value.trim(),
+        "手機": document.getElementById("phone").value.trim(),
+        "預約日期": document.getElementById("visitDate").value,
+        "預約時段": timeSlot,
+        "參觀人數": document.getElementById("people").value,
+        "體驗產品": document.getElementById("product").value,
+        "備註": document.getElementById("note").value.trim()
+      };
+
+      console.log("送出 payload：", payload);
+
+      try {
+        const res = await fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        console.log("Apps Script 回傳：", text);
+
+        let result = {};
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error("回傳格式不是 JSON：" + text);
+        }
+
+        if (!res.ok) {
+          throw new Error("HTTP " + res.status + " / " + text);
+        }
+
+        if (!result.ok) {
+          throw new Error(result.message || result.error || "未知錯誤");
+        }
+
+        setStatus("預約送出成功，資料已寫入系統。", "ok");
+
+        showModal(
+          "預約成功",
+          "您的預約已送出。\n後續門禁資訊將透過 LINE 通知。",
+          function () {
+            if (liff.isInClient()) {
+              liff.closeWindow();
+            }
+          }
+        );
+      } catch (err) {
+        console.error("submitForm error =", err);
+        console.error("error name =", err?.name);
+        console.error("error message =", err?.message);
+
+        const msg =
+          "name: " + (err?.name || "") + "\n" +
+          "message: " + (err?.message || err || "");
+
+        setStatus("送出失敗：\n" + msg, "err");
+        showModal("送出失敗", "系統暫時無法送出：\n" + msg);
+      } finally {
+        setSubmitLoading(false);
+      }
+    }
+
+    window.onload = function () {
+      initLIFF();
+    };
+  </script>
 </body>
 </html>
