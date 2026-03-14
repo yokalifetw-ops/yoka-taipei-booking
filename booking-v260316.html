@@ -174,17 +174,9 @@
       padding: 12px;
     }
 
-    .ok {
-      color: var(--success);
-    }
-
-    .err {
-      color: var(--danger);
-    }
-
-    .hidden {
-      display: none;
-    }
+    .ok { color: var(--success); }
+    .err { color: var(--danger); }
+    .hidden { display: none; }
 
     .loading-inline {
       display: inline-flex;
@@ -257,12 +249,6 @@
       cursor: pointer;
     }
 
-    .modal-btn.secondary {
-      background: #e9ecef;
-      color: #333;
-      margin-top: 10px;
-    }
-
     .top-note {
       background: #fff8e8;
       border: 1px solid #f3e0a2;
@@ -288,7 +274,7 @@
     </div>
 
     <div class="top-note">
-      預約送出後，門禁資訊將以 LINE 通知，請確認您已使用 LINE 內開啟本頁面。
+      預約完成後，系統將立即傳送成功通知；並在預約開始前約 30 分鐘，自動透過 LINE 發送開門按鈕。
     </div>
 
     <label for="name">姓名 *</label>
@@ -332,7 +318,7 @@
       1. 請勿攜帶飲食入內，垃圾請自行帶走，並請共同維護展示空間與產品完整。<br>
       2. 體驗館內椅款可自由調整與試坐，體驗完畢後請協助恢復原位。<br>
       3. 同一時段可能有其他預約訪客，請互相尊重並保持良好參觀秩序。<br>
-      4. 門禁密碼僅限預約本人使用，請勿轉傳或提供他人使用。<br>
+      4. 開門按鈕僅限預約本人使用，請勿轉傳或提供他人使用。<br>
       5. 體驗館位於地下一樓，上下樓梯時請留意自身安全。<br>
       6. 館內產品皆可自由體驗，請愛惜使用；若因不當操作造成損壞，需負相關賠償責任。<br>
       7. 如有任何問題，歡迎隨時聯繫線上客服。
@@ -360,14 +346,13 @@
       <div id="modalTitle" class="modal-title">提醒</div>
       <div id="modalText" class="modal-text"></div>
       <button id="modalConfirmBtn" class="modal-btn" type="button">確定</button>
-      <button id="modalCancelBtn" class="modal-btn secondary hidden" type="button">取消</button>
     </div>
   </div>
 
   <script>
     const LIFF_ID = "2009269118-yjgdw5YM";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZUhXgLIKU7etk9_Edg6Rm8QnYmoj1RyjWuEDNvJP4iUyLaNlewqHFhcrlZAMTcWOl/exec";
-    const APP_VERSION = "20260312-2005";
+    const APP_VERSION = "20260314-001";
 
     let liffReady = false;
 
@@ -391,31 +376,19 @@
       return true;
     }
 
-    function showModal(title, text, onConfirm = null, showCancel = false) {
+    function showModal(title, text, onConfirm = null) {
       document.getElementById("modalTitle").innerText = title;
       document.getElementById("modalText").innerText = text;
 
       const modal = document.getElementById("modal");
       const confirmBtn = document.getElementById("modalConfirmBtn");
-      const cancelBtn = document.getElementById("modalCancelBtn");
 
       confirmBtn.onclick = function () {
-        closeModal();
+        modal.classList.remove("show");
         if (typeof onConfirm === "function") onConfirm();
       };
 
-      if (showCancel) {
-        cancelBtn.classList.remove("hidden");
-        cancelBtn.onclick = closeModal;
-      } else {
-        cancelBtn.classList.add("hidden");
-      }
-
       modal.classList.add("show");
-    }
-
-    function closeModal() {
-      document.getElementById("modal").classList.remove("show");
     }
 
     function setSubmitLoading(isLoading) {
@@ -543,8 +516,6 @@
         "備註": document.getElementById("note").value.trim()
       };
 
-      console.log("送出 payload：", payload);
-
       try {
         const res = await fetch(WEB_APP_URL, {
           method: "POST",
@@ -555,7 +526,6 @@
         });
 
         const text = await res.text();
-        console.log("Apps Script 回傳：", text);
 
         let result = {};
         try {
@@ -576,7 +546,7 @@
 
         showModal(
           "預約成功",
-          "您的預約已送出。\n後續門禁資訊將透過 LINE 通知。",
+          "您的預約已送出。\n系統會立即透過 LINE 發送預約成功通知，並會在預約時間前約 30 分鐘再推播開門按鈕。",
           function () {
             if (liff.isInClient()) {
               liff.closeWindow();
@@ -584,10 +554,6 @@
           }
         );
       } catch (err) {
-        console.error("submitForm error =", err);
-        console.error("error name =", err?.name);
-        console.error("error message =", err?.message);
-
         const msg =
           "name: " + (err?.name || "") + "\n" +
           "message: " + (err?.message || err || "");
