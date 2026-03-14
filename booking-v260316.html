@@ -439,44 +439,53 @@
     }
 
     function validateForm() {
-      const name = document.getElementById("name").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const visitDate = document.getElementById("visitDate").value;
-      const time = document.getElementById("time").value;
-      const agree = document.getElementById("agree").checked;
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const visitDate = document.getElementById("visitDate").value;
+  const time = document.getElementById("time").value;
+  const agree = document.getElementById("agree").checked;
 
-      if (!liffReady) {
-        showModal("系統尚未完成", "LINE 身分尚未初始化完成，請稍候幾秒後再試。");
-        return false;
-      }
+  if (!liffReady) {
+    showModal("系統尚未完成", "LINE 身分尚未初始化完成，請稍候幾秒後再試。");
+    return false;
+  }
 
-      if (!name) {
-        showModal("請補填資料", "請輸入姓名");
-        return false;
-      }
+  if (!name) {
+    showModal("請補填資料", "請輸入姓名");
+    return false;
+  }
 
-      if (!phone) {
-        showModal("請補填資料", "請輸入手機");
-        return false;
-      }
+  if (!phone) {
+    showModal("請補填資料", "請輸入手機");
+    return false;
+  }
 
-      if (!visitDate) {
-        showModal("請補填資料", "請選擇預約日期");
-        return false;
-      }
+  if (!visitDate) {
+    showModal("請補填資料", "請選擇預約日期");
+    return false;
+  }
 
-      if (!time) {
-        showModal("請補填資料", "請選擇預約時間");
-        return false;
-      }
+  if (!time) {
+    showModal("請補填資料", "請選擇預約時間");
+    return false;
+  }
 
-      if (!agree) {
-        showModal("請確認規範", "請先勾選同意體驗館使用規範");
-        return false;
-      }
+  if (!agree) {
+    showModal("請確認規範", "請先勾選同意體驗館使用規範");
+    return false;
+  }
 
-      return true;
-    }
+  // 檢查預約開始時間需晚於現在
+  const selectedStart = new Date(`${visitDate}T${time}:00`);
+  const now = new Date();
+
+  if (selectedStart <= now) {
+    showModal("時間不可預約", "預約時間必須晚於目前時間。");
+    return false;
+  }
+
+  return true;
+}
 
     function buildTimeSlot(startTime) {
       const parts = startTime.split(":");
