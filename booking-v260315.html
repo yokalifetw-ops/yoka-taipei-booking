@@ -585,10 +585,17 @@
         }
       );
     } catch (err) {
-      console.error(err);
-      setStatus("送出失敗：\n" + (err.message || err), "err");
-      showModal("送出失敗", "系統暫時無法送出：\n" + (err.message || err));
-    } finally {
+  console.error("submitForm error =", err);
+  console.error("error name =", err?.name);
+  console.error("error message =", err?.message);
+
+  const msg =
+    "name: " + (err?.name || "") + "\n" +
+    "message: " + (err?.message || err || "");
+
+  setStatus("送出失敗：\n" + msg, "err");
+  showModal("送出失敗", "系統暫時無法送出：\n" + msg);
+} finally {
       setSubmitLoading(false);
     }
   }
