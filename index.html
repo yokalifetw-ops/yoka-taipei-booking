@@ -3,44 +3,70 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>佑客家具 台北體驗館預約</title>
+  <title>YOKA 佑客家具｜台北體驗館預約</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
     * { box-sizing: border-box; }
 
+    :root {
+      --brand: #06C755;
+      --brand-dark: #05a647;
+      --text: #222;
+      --subtext: #666;
+      --border: #d8dbe2;
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --soft: #f7f8fa;
+      --danger: #c5221f;
+      --success: #137333;
+      --shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
     body {
       margin: 0;
       padding: 20px;
-      background: #f5f6f8;
+      background: var(--bg);
       font-family: Arial, "Microsoft JhengHei", sans-serif;
-      color: #222;
+      color: var(--text);
     }
 
     .wrap {
-      max-width: 520px;
+      max-width: 560px;
       margin: 0 auto;
-      background: #fff;
+      background: var(--card);
       border-radius: 18px;
       padding: 24px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      box-shadow: var(--shadow);
+    }
+
+    .brand-badge {
+      display: inline-block;
+      background: #eefaf2;
+      color: var(--brand-dark);
+      border: 1px solid #cdeed7;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 12px;
     }
 
     h1 {
-      margin: 0 0 8px 0;
+      margin: 0 0 10px 0;
       font-size: 28px;
       line-height: 1.35;
     }
 
     .desc {
-      color: #666;
+      color: var(--subtext);
       font-size: 14px;
-      line-height: 1.7;
-      margin-bottom: 18px;
+      line-height: 1.8;
+      margin-bottom: 20px;
     }
 
     .section-title {
-      margin-top: 18px;
+      margin-top: 20px;
       margin-bottom: 8px;
       font-size: 15px;
       font-weight: bold;
@@ -60,24 +86,43 @@
     select,
     textarea {
       width: 100%;
-      border: 1px solid #d8dbe2;
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 13px 14px;
       font-size: 16px;
       background: #fff;
       outline: none;
+      appearance: none;
     }
 
     input:focus,
     select:focus,
     textarea:focus {
-      border-color: #06C755;
+      border-color: var(--brand);
       box-shadow: 0 0 0 3px rgba(6,199,85,0.12);
     }
 
     textarea {
-      min-height: 100px;
+      min-height: 110px;
       resize: vertical;
+    }
+
+    .input-error {
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 0 3px rgba(197,34,31,0.1) !important;
+    }
+
+    .field-error {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--danger);
+      display: none;
+    }
+
+    .hint {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #888;
     }
 
     .rule-box {
@@ -87,7 +132,7 @@
       border: 1px solid #ececec;
       border-radius: 12px;
       font-size: 14px;
-      line-height: 1.8;
+      line-height: 1.9;
       color: #444;
     }
 
@@ -97,30 +142,43 @@
       gap: 10px;
       margin-top: 16px;
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
     .agree-wrap input[type="checkbox"] {
-      margin-top: 3px;
-      transform: scale(1.2);
+      width: 18px;
+      height: 18px;
+      margin-top: 2px;
+      flex: 0 0 auto;
     }
 
     .btn {
       width: 100%;
       border: 0;
       border-radius: 12px;
-      background: #06C755;
+      background: var(--brand);
       color: #fff;
       font-size: 18px;
       font-weight: bold;
       padding: 15px;
       margin-top: 20px;
       cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--brand-dark);
     }
 
     .btn:disabled {
       background: #9cd8b1;
       cursor: not-allowed;
+    }
+
+    .btn.secondary {
+      background: #e9ecef;
+      color: #333;
+      margin-top: 10px;
     }
 
     .status {
@@ -129,44 +187,147 @@
       line-height: 1.6;
       white-space: pre-wrap;
       color: #333;
-      background: #f7f8fa;
+      background: var(--soft);
       border-radius: 12px;
       padding: 12px;
     }
 
-    .ok {
-      color: #137333;
+    .ok { color: var(--success); }
+    .err { color: var(--danger); }
+    .hidden { display: none; }
+
+    .loading-inline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .err {
-      color: #c5221f;
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.45);
+      border-top: 2px solid #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
     }
 
-    .hidden {
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.42);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 360px;
+      background: #fff;
+      border-radius: 18px;
+      padding: 24px 20px 18px;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.18);
+    }
+
+    .modal-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .modal-text {
+      font-size: 15px;
+      color: #444;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      margin-bottom: 18px;
+    }
+
+    .modal-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      padding: 13px;
+      cursor: pointer;
+    }
+
+    .top-note {
+      background: #fff8e8;
+      border: 1px solid #f3e0a2;
+      color: #7a5b00;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .edit-banner {
+      background: #eef7ff;
+      border: 1px solid #cfe3ff;
+      color: #1f4c7a;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 16px;
       display: none;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>佑客家具 台北體驗館預約</h1>
+    <div class="brand-badge">YOKA｜台北體驗館</div>
+
+    <h1 id="pageTitle1">YOKA 佑客 人體工學椅</h1>
+    <h1 id="pageTitle2">台北體驗館預約</h1>
+
     <div class="desc">
+      體驗館地址：台北市萬華區萬大路138號 B1<br>
       請填寫以下資料，送出後將透過 LINE 提供後續門禁資訊。
+    </div>
+
+    <div id="editBanner" class="edit-banner">
+      您目前正在修改既有預約，請重新選擇日期與時間後送出。
+    </div>
+
+    <div class="top-note">
+      目前僅開放預約 2026/03/20 10:00 後之時段。<br>
+      同一 LINE 帳號於有效預約期間內不可重複預約。<br>
+      預約完成後，系統將立即發送預約成功通知，並於預約時間前約 30 分鐘發送開門按鈕。
     </div>
 
     <label for="name">姓名 *</label>
     <input id="name" type="text" placeholder="請輸入姓名">
 
     <label for="phone">手機 *</label>
-    <input id="phone" type="tel" placeholder="請輸入手機">
+    <input id="phone" type="tel" placeholder="請輸入 10 碼手機號碼" maxlength="10" inputmode="numeric">
+    <div id="phoneError" class="field-error">手機號碼需為 10 碼，且須為台灣手機格式。</div>
 
     <label for="visitDate">預約日期 *</label>
-    <input id="visitDate" type="date">
+    <input id="visitDate" type="date" min="2026-03-20">
 
     <label for="time">預約時間 *</label>
-    <input id="time" type="time" min="10:00" max="19:00" required>
+    <input id="time" type="time" min="00:00" max="23:59" step="1800" required>
+    <div class="hint">24H開放</div>
 
-    <label for="people">參觀人數</label>
+    <label for="people">體驗人數</label>
     <select id="people">
       <option value="1">1人</option>
       <option value="2">2人</option>
@@ -186,17 +347,18 @@
     </select>
 
     <label for="note">其他需求</label>
-    <textarea id="note" placeholder="例如：想試坐 Omni / H53"></textarea>
+    <textarea id="note" placeholder="例如：想試坐 太空滑翔椅 / 大宗採購"></textarea>
 
     <div class="section-title">體驗館使用規範</div>
     <div class="rule-box">
       本館為無人展示體驗空間，全區設有監視錄影設備。<br>
-      1. 請勿攜帶飲食入內，並請共同維護展示空間與產品完整。<br>
+      1. 請勿攜帶飲食入內，垃圾請自行帶走，並請共同維護展示空間與產品完整。<br>
       2. 體驗館內椅款可自由調整與試坐，體驗完畢後請協助恢復原位。<br>
       3. 同一時段可能有其他預約訪客，請互相尊重並保持良好參觀秩序。<br>
-      4. 門禁密碼僅限預約本人使用，請勿轉傳或提供他人使用。<br>
+      4. 開門按鈕僅限預約本人使用，請勿轉傳或提供他人使用。<br>
       5. 體驗館位於地下一樓，上下樓梯時請留意自身安全。<br>
-      6. 館內產品皆可自由體驗，請愛惜使用；若因不當操作造成損壞，需負相關賠償責任。
+      6. 館內產品皆可自由體驗，請愛惜使用；若因不當操作造成損壞，需負相關賠償責任。<br>
+      7. 如有任何問題，歡迎隨時聯繫線上客服。
     </div>
 
     <div class="agree-wrap">
@@ -207,21 +369,32 @@
     </div>
 
     <button id="submitBtn" class="btn" type="button" onclick="submitForm()">送出預約</button>
+    <button id="cancelBookingBtn" class="btn secondary hidden" type="button" onclick="cancelBooking()">取消此預約</button>
 
     <div id="status" class="status">正在初始化 LINE 身分...</div>
 
     <div class="hidden">
       <input id="userId" type="text">
       <input id="displayName" type="text">
+      <input id="bookingId" type="text">
+    </div>
+  </div>
+
+  <div id="modal" class="modal">
+    <div class="modal-box">
+      <div id="modalTitle" class="modal-title">提醒</div>
+      <div id="modalText" class="modal-text"></div>
+      <button id="modalConfirmBtn" class="modal-btn" type="button">確定</button>
     </div>
   </div>
 
   <script>
     const LIFF_ID = "2009269118-yjgdw5YM";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxllttk-pTdGsXXdhoJ1QXDdWLRLxr2rJIyf1D0KcwVpaoaPz_vFmQHZV0i-48tMVFZ/exec";
-    const APP_VERSION = "20260312-1925";        ///////之後只要有改版，把這一行一起改掉 LINE LIFF也要改
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZUhXgLIKU7etk9_Edg6Rm8QnYmoj1RyjWuEDNvJP4iUyLaNlewqHFhcrlZAMTcWOl/exec";
+    const APP_VERSION = "20260317-002";
 
     let liffReady = false;
+    let pageMode = "create"; // create | edit
 
     function setStatus(message, type = "") {
       const el = document.getElementById("status");
@@ -243,16 +416,83 @@
       return true;
     }
 
+    function showModal(title, text, onConfirm = null) {
+      document.getElementById("modalTitle").innerText = title;
+      document.getElementById("modalText").innerText = text;
+
+      const modal = document.getElementById("modal");
+      const confirmBtn = document.getElementById("modalConfirmBtn");
+
+      confirmBtn.onclick = function () {
+        modal.classList.remove("show");
+        if (typeof onConfirm === "function") onConfirm();
+      };
+
+      modal.classList.add("show");
+    }
+
+    function setSubmitLoading(isLoading) {
+      const btn = document.getElementById("submitBtn");
+      if (isLoading) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-inline"><span class="spinner"></span>送出中...</span>';
+      } else {
+        btn.disabled = false;
+        btn.innerText = pageMode === "edit" ? "確認修改" : "送出預約";
+      }
+    }
+
+    function sanitizePhoneInput() {
+      const phoneInput = document.getElementById("phone");
+      phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
+      validatePhoneRealtime();
+    }
+
+    function validatePhoneRealtime() {
+      const phoneInput = document.getElementById("phone");
+      const err = document.getElementById("phoneError");
+      const value = phoneInput.value.trim();
+
+      const ok = /^09\d{8}$/.test(value);
+
+      if (value.length === 0) {
+        phoneInput.classList.remove("input-error");
+        err.style.display = "none";
+        return false;
+      }
+
+      if (!ok) {
+        phoneInput.classList.add("input-error");
+        err.style.display = "block";
+        return false;
+      }
+
+      phoneInput.classList.remove("input-error");
+      err.style.display = "none";
+      return true;
+    }
+
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || "";
+    }
+
+    function applyEditModeUI() {
+      document.getElementById("pageTitle2").innerText = "修改預約時間";
+      document.getElementById("editBanner").style.display = "block";
+      document.getElementById("submitBtn").innerText = "確認修改";
+      document.getElementById("cancelBookingBtn").classList.remove("hidden");
+    }
+
     async function initLIFF() {
       try {
-        setStatus("1. 開始初始化 LIFF...");
+        setStatus("1. 開始初始化 LINE 身分...");
 
         await liff.init({ liffId: LIFF_ID });
 
-        // LIFF init 成功後再做版本跳轉，避免影響初始化
         if (!ensureLatestVersion()) return;
 
-        setStatus("2. LIFF 初始化成功，正在檢查登入狀態...");
+        setStatus("2. LINE 身分初始化成功，正在檢查登入狀態...");
 
         if (!liff.isLoggedIn()) {
           setStatus("3. 尚未登入 LINE，正在導向登入...");
@@ -263,25 +503,72 @@
         setStatus("4. 已登入，正在取得 LINE 身分資料...");
 
         const profile = await liff.getProfile();
-
         document.getElementById("userId").value = profile.userId || "";
         document.getElementById("displayName").value = profile.displayName || "";
 
         liffReady = true;
 
-        setStatus(
-          "LINE 身分讀取成功\n" +
-          "LINE 暱稱：" + (profile.displayName || "") + "\n" +
-          "UserID：" + (profile.userId || ""),
-          "ok"
-        );
+        // 判斷是否為修改模式
+        const mode = getQueryParam("mode");
+        const bookingId = getQueryParam("bookingId");
+
+        if (mode === "edit" && bookingId) {
+          pageMode = "edit";
+          document.getElementById("bookingId").value = bookingId;
+          applyEditModeUI();
+          await loadBookingForEdit(bookingId, profile.userId || "");
+        }
+
+        document.getElementById("status").style.display = "none";
       } catch (err) {
         setStatus(
-          "LIFF 初始化失敗\n" +
+          "LINE 初始化失敗\n" +
           "message: " + (err.message || err) + "\n" +
           "目前網址: " + location.href,
           "err"
         );
+      }
+    }
+
+    async function loadBookingForEdit(bookingId, lineUserId) {
+      try {
+        setStatus("載入原預約資料中...");
+
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set("action", "get_booking");
+        url.searchParams.set("bookingId", bookingId);
+        url.searchParams.set("lineUserId", lineUserId);
+
+        const res = await fetch(url.toString(), {
+          method: "GET"
+        });
+
+        const text = await res.text();
+        let result = {};
+
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error("讀取預約資料失敗：" + text);
+        }
+
+        if (!result.ok) {
+          throw new Error(result.error || result.message || "讀取預約資料失敗");
+        }
+
+        const d = result.data;
+        document.getElementById("name").value = d.name || "";
+        document.getElementById("phone").value = d.phone || "";
+        document.getElementById("visitDate").value = d.visitDate || "";
+        document.getElementById("time").value = d.bookingTime || "";
+        document.getElementById("people").value = d.people || "1";
+        document.getElementById("product").value = d.product || "";
+        document.getElementById("note").value = d.note || "";
+
+        document.getElementById("status").style.display = "none";
+      } catch (err) {
+        setStatus("載入失敗：\n" + (err.message || err), "err");
+        showModal("載入失敗", err.message || String(err));
       }
     }
 
@@ -293,32 +580,46 @@
       const agree = document.getElementById("agree").checked;
 
       if (!liffReady) {
-        alert("LINE 身分尚未初始化完成，請先查看下方狀態訊息。");
+        showModal("系統尚未完成", "LINE 身分尚未初始化完成，請稍候幾秒後再試。");
         return false;
       }
 
       if (!name) {
-        alert("請輸入姓名");
+        showModal("請補填資料", "請輸入姓名");
         return false;
       }
 
-      if (!phone) {
-        alert("請輸入手機");
+      if (!/^09\d{8}$/.test(phone)) {
+        showModal("手機格式錯誤", "手機號碼需為 10 碼，且須為台灣手機格式。");
         return false;
       }
 
       if (!visitDate) {
-        alert("請選擇預約日期");
+        showModal("請補填資料", "請選擇預約日期");
         return false;
       }
 
       if (!time) {
-        alert("請選擇預約時間");
+        showModal("請補填資料", "請選擇預約時間");
         return false;
       }
 
       if (!agree) {
-        alert("請先勾選同意體驗館使用規範");
+        showModal("請確認規範", "請先勾選同意體驗館使用規範");
+        return false;
+      }
+
+      const selectedStart = new Date(`${visitDate}T${time}:00`);
+      const now = new Date();
+
+      if (selectedStart <= now) {
+        showModal("時間不可預約", "預約時間必須晚於目前時間。");
+        return false;
+      }
+
+      const bookingMinTime = new Date(2026, 2, 20, 10, 0, 0);
+      if (selectedStart < bookingMinTime) {
+        showModal("時間不可預約", "僅可預約 2026/03/20 上午10:00 之後的時段。");
         return false;
       }
 
@@ -328,20 +629,23 @@
     async function submitForm() {
       if (!validateForm()) return;
 
-      const btn = document.getElementById("submitBtn");
-      btn.disabled = true;
+      setSubmitLoading(true);
       setStatus("資料送出中，請稍候...");
 
-      const data = {
-        userId: document.getElementById("userId").value,
-        displayName: document.getElementById("displayName").value,
-        name: document.getElementById("name").value.trim(),
-        phone: document.getElementById("phone").value.trim(),
-        visitDate: document.getElementById("visitDate").value,
-        time: document.getElementById("time").value,
-        people: document.getElementById("people").value,
-        product: document.getElementById("product").value,
-        note: document.getElementById("note").value.trim()
+      const bookingTime = document.getElementById("time").value;
+
+      const payload = {
+        action: pageMode === "edit" ? "update_booking" : "create_booking",
+        bookingId: document.getElementById("bookingId").value,
+        "LINE UserID": document.getElementById("userId").value,
+        "LINE 暱稱": document.getElementById("displayName").value,
+        "姓名": document.getElementById("name").value.trim(),
+        "手機": document.getElementById("phone").value.trim(),
+        "預約日期": document.getElementById("visitDate").value,
+        "預約時段": bookingTime,
+        "參觀人數": document.getElementById("people").value,
+        "體驗產品": document.getElementById("product").value,
+        "備註": document.getElementById("note").value.trim()
       };
 
       try {
@@ -350,35 +654,107 @@
           headers: {
             "Content-Type": "text/plain;charset=utf-8"
           },
-          body: JSON.stringify(data)
+          body: JSON.stringify(payload)
         });
 
         const text = await res.text();
+
+        let result = {};
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error("回傳格式不是 JSON：" + text);
+        }
 
         if (!res.ok) {
           throw new Error("HTTP " + res.status + " / " + text);
         }
 
-        if (text.indexOf("ERROR") > -1) {
-          throw new Error(text);
+        if (!result.ok) {
+          throw new Error(result.message || result.error || "未知錯誤");
         }
 
-        setStatus("預約送出成功，資料已寫入系統。", "ok");
-        alert("預約送出成功");
+        setStatus(pageMode === "edit" ? "預約修改成功。" : "預約送出成功，資料已寫入系統。", "ok");
 
-        if (liff.isInClient()) {
-          liff.closeWindow();
-        }
+        showModal(
+          pageMode === "edit" ? "修改成功" : "預約成功",
+          pageMode === "edit"
+            ? "您的預約已更新。\n系統會透過 LINE 發送更新通知，並會在預約時間前約 30 分鐘再推播開門按鈕。"
+            : "您的預約已送出。\n系統會立即透過 LINE 發送預約成功通知，並會在預約時間前約 30 分鐘再推播開門按鈕。",
+          function () {
+            if (liff.isInClient()) {
+              liff.closeWindow();
+            }
+          }
+        );
       } catch (err) {
-        setStatus("送出失敗：\n" + (err.message || err), "err");
-        alert("送出失敗，請稍後再試");
+        const msg =
+          "name: " + (err?.name || "") + "\n" +
+          "message: " + (err?.message || err || "");
+
+        setStatus("送出失敗：\n" + msg, "err");
+        showModal("送出失敗", msg);
       } finally {
-        btn.disabled = false;
+        setSubmitLoading(false);
       }
     }
 
-    initLIFF();
+    async function cancelBooking() {
+      const bookingId = document.getElementById("bookingId").value;
+      const lineUserId = document.getElementById("userId").value;
+
+      if (!bookingId) {
+        showModal("無法取消", "查無預約編號。");
+        return;
+      }
+
+      setSubmitLoading(true);
+
+      try {
+        const payload = {
+          action: "cancel_booking",
+          bookingId: bookingId,
+          lineUserId: lineUserId
+        };
+
+        const res = await fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        let result = {};
+
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error("回傳格式不是 JSON：" + text);
+        }
+
+        if (!result.ok) {
+          throw new Error(result.message || result.error || "取消失敗");
+        }
+
+        showModal("取消成功", "您的預約已取消。", function () {
+          if (liff.isInClient()) {
+            liff.closeWindow();
+          }
+        });
+      } catch (err) {
+        showModal("取消失敗", err.message || String(err));
+      } finally {
+        setSubmitLoading(false);
+      }
+    }
+
+    document.getElementById("phone").addEventListener("input", sanitizePhoneInput);
+
+    window.onload = function () {
+      initLIFF();
+    };
   </script>
 </body>
 </html>
-
