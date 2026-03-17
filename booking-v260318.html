@@ -175,6 +175,12 @@
       cursor: not-allowed;
     }
 
+    .btn.secondary {
+      background: #e9ecef;
+      color: #333;
+      margin-top: 10px;
+    }
+
     .status {
       margin-top: 16px;
       font-size: 14px;
@@ -271,18 +277,34 @@
       line-height: 1.7;
       margin-bottom: 16px;
     }
+
+    .edit-banner {
+      background: #eef7ff;
+      border: 1px solid #cfe3ff;
+      color: #1f4c7a;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="brand-badge">YOKA｜台北體驗館</div>
 
-    <h1>YOKA 佑客 人體工學椅</h1>
-    <h1>台北體驗館預約</h1>
+    <h1 id="pageTitle1">YOKA 佑客 人體工學椅</h1>
+    <h1 id="pageTitle2">台北體驗館預約</h1>
 
     <div class="desc">
       體驗館地址：台北市萬華區萬大路138號 B1<br>
       請填寫以下資料，送出後將透過 LINE 提供後續門禁資訊。
+    </div>
+
+    <div id="editBanner" class="edit-banner">
+      您目前正在修改既有預約，請重新選擇日期與時間後送出。
     </div>
 
     <div class="top-note">
@@ -347,12 +369,14 @@
     </div>
 
     <button id="submitBtn" class="btn" type="button" onclick="submitForm()">送出預約</button>
+    <button id="cancelBookingBtn" class="btn secondary hidden" type="button" onclick="cancelBooking()">取消此預約</button>
 
     <div id="status" class="status">正在初始化 LINE 身分...</div>
 
     <div class="hidden">
       <input id="userId" type="text">
       <input id="displayName" type="text">
+      <input id="bookingId" type="text">
     </div>
   </div>
 
@@ -367,9 +391,10 @@
   <script>
     const LIFF_ID = "2009269118-yjgdw5YM";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZUhXgLIKU7etk9_Edg6Rm8QnYmoj1RyjWuEDNvJP4iUyLaNlewqHFhcrlZAMTcWOl/exec";
-    const APP_VERSION = "20260317-001";
+    const APP_VERSION = "20260317-002";
 
     let liffReady = false;
+    let pageMode = "create"; // create | edit
 
     function setStatus(message, type = "") {
       const el = document.getElementById("status");
@@ -413,7 +438,7 @@
         btn.innerHTML = '<span class="loading-inline"><span class="spinner"></span>送出中...</span>';
       } else {
         btn.disabled = false;
-        btn.innerText = "送出預約";
+        btn.innerText = pageMode === "edit" ? "確認修改" : "送出預約";
       }
     }
 
@@ -447,6 +472,18 @@
       return true;
     }
 
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name) || "";
+    }
+
+    function applyEditModeUI() {
+      document.getElementById("pageTitle2").innerText = "修改預約時間";
+      document.getElementById("editBanner").style.display = "block";
+      document.getElementById("submitBtn").innerText = "確認修改";
+      document.getElementById("cancelBookingBtn").classList.remove("hidden");
+    }
+
     async function initLIFF() {
       try {
         setStatus("1. 開始初始化 LINE 身分...");
@@ -470,6 +507,18 @@
         document.getElementById("displayName").value = profile.displayName || "";
 
         liffReady = true;
+
+        // 判斷是否為修改模式
+        const mode = getQueryParam("mode");
+        const bookingId = getQueryParam("bookingId");
+
+        if (mode === "edit" && bookingId) {
+          pageMode = "edit";
+          document.getElementById("bookingId").value = bookingId;
+          applyEditModeUI();
+          await loadBookingForEdit(bookingId, profile.userId || "");
+        }
+
         document.getElementById("status").style.display = "none";
       } catch (err) {
         setStatus(
@@ -478,6 +527,48 @@
           "目前網址: " + location.href,
           "err"
         );
+      }
+    }
+
+    async function loadBookingForEdit(bookingId, lineUserId) {
+      try {
+        setStatus("載入原預約資料中...");
+
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set("action", "get_booking");
+        url.searchParams.set("bookingId", bookingId);
+        url.searchParams.set("lineUserId", lineUserId);
+
+        const res = await fetch(url.toString(), {
+          method: "GET"
+        });
+
+        const text = await res.text();
+        let result = {};
+
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error("讀取預約資料失敗：" + text);
+        }
+
+        if (!result.ok) {
+          throw new Error(result.error || result.message || "讀取預約資料失敗");
+        }
+
+        const d = result.data;
+        document.getElementById("name").value = d.name || "";
+        document.getElementById("phone").value = d.phone || "";
+        document.getElementById("visitDate").value = d.visitDate || "";
+        document.getElementById("time").value = d.bookingTime || "";
+        document.getElementById("people").value = d.people || "1";
+        document.getElementById("product").value = d.product || "";
+        document.getElementById("note").value = d.note || "";
+
+        document.getElementById("status").style.display = "none";
+      } catch (err) {
+        setStatus("載入失敗：\n" + (err.message || err), "err");
+        showModal("載入失敗", err.message || String(err));
       }
     }
 
@@ -544,6 +635,8 @@
       const bookingTime = document.getElementById("time").value;
 
       const payload = {
+        action: pageMode === "edit" ? "update_booking" : "create_booking",
+        bookingId: document.getElementById("bookingId").value,
         "LINE UserID": document.getElementById("userId").value,
         "LINE 暱稱": document.getElementById("displayName").value,
         "姓名": document.getElementById("name").value.trim(),
@@ -581,11 +674,13 @@
           throw new Error(result.message || result.error || "未知錯誤");
         }
 
-        setStatus("預約送出成功，資料已寫入系統。", "ok");
+        setStatus(pageMode === "edit" ? "預約修改成功。" : "預約送出成功，資料已寫入系統。", "ok");
 
         showModal(
-          "預約成功",
-          "您的預約已送出。\n系統會立即透過 LINE 發送預約成功通知，並會在預約時間前約 30 分鐘再推播開門按鈕。",
+          pageMode === "edit" ? "修改成功" : "預約成功",
+          pageMode === "edit"
+            ? "您的預約已更新。\n系統會透過 LINE 發送更新通知，並會在預約時間前約 30 分鐘再推播開門按鈕。"
+            : "您的預約已送出。\n系統會立即透過 LINE 發送預約成功通知，並會在預約時間前約 30 分鐘再推播開門按鈕。",
           function () {
             if (liff.isInClient()) {
               liff.closeWindow();
@@ -599,6 +694,57 @@
 
         setStatus("送出失敗：\n" + msg, "err");
         showModal("送出失敗", msg);
+      } finally {
+        setSubmitLoading(false);
+      }
+    }
+
+    async function cancelBooking() {
+      const bookingId = document.getElementById("bookingId").value;
+      const lineUserId = document.getElementById("userId").value;
+
+      if (!bookingId) {
+        showModal("無法取消", "查無預約編號。");
+        return;
+      }
+
+      setSubmitLoading(true);
+
+      try {
+        const payload = {
+          action: "cancel_booking",
+          bookingId: bookingId,
+          lineUserId: lineUserId
+        };
+
+        const res = await fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const text = await res.text();
+        let result = {};
+
+        try {
+          result = JSON.parse(text);
+        } catch (e) {
+          throw new Error("回傳格式不是 JSON：" + text);
+        }
+
+        if (!result.ok) {
+          throw new Error(result.message || result.error || "取消失敗");
+        }
+
+        showModal("取消成功", "您的預約已取消。", function () {
+          if (liff.isInClient()) {
+            liff.closeWindow();
+          }
+        });
+      } catch (err) {
+        showModal("取消失敗", err.message || String(err));
       } finally {
         setSubmitLoading(false);
       }
