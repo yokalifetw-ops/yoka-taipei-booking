@@ -286,6 +286,8 @@
     </div>
 
     <div class="top-note">
+      目前僅開放預約 2026/03/20 10:00 後之時段。<br>
+      同一 LINE 帳號於有效預約期間內不可重複預約。<br>
       預約完成後，系統將立即發送預約成功通知，並於預約時間前約 30 分鐘發送開門按鈕。
     </div>
 
@@ -297,11 +299,11 @@
     <div id="phoneError" class="field-error">手機號碼需為 10 碼，且須為台灣手機格式。</div>
 
     <label for="visitDate">預約日期 *</label>
-    <input id="visitDate" type="date">
+    <input id="visitDate" type="date" min="2026-03-20">
 
     <label for="time">預約時間 *</label>
     <input id="time" type="time" min="00:00" max="23:59" step="1800" required>
-    <div class="hint">開放預約時間：3/20 10:00後 24H開放，請選擇預約時間</div>
+    <div class="hint">開放預約時間：2026/03/20 10:00 後，之後 24H 可預約</div>
 
     <label for="people">體驗人數</label>
     <select id="people">
@@ -365,7 +367,7 @@
   <script>
     const LIFF_ID = "2009269118-yjgdw5YM";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZUhXgLIKU7etk9_Edg6Rm8QnYmoj1RyjWuEDNvJP4iUyLaNlewqHFhcrlZAMTcWOl/exec";
-    const APP_VERSION = "20260314-003";
+    const APP_VERSION = "20260317-001";
 
     let liffReady = false;
 
@@ -524,6 +526,12 @@
         return false;
       }
 
+      const bookingMinTime = new Date(2026, 2, 20, 10, 0, 0);
+      if (selectedStart < bookingMinTime) {
+        showModal("時間不可預約", "僅可預約 2026/03/20 上午10:00 之後的時段。");
+        return false;
+      }
+
       return true;
     }
 
@@ -590,7 +598,7 @@
           "message: " + (err?.message || err || "");
 
         setStatus("送出失敗：\n" + msg, "err");
-        showModal("送出失敗", "系統暫時無法送出：\n" + msg);
+        showModal("送出失敗", msg);
       } finally {
         setSubmitLoading(false);
       }
