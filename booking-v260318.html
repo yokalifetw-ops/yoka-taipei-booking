@@ -391,7 +391,7 @@
   <script>
     const LIFF_ID = "2009269118-yjgdw5YM";
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyZUhXgLIKU7etk9_Edg6Rm8QnYmoj1RyjWuEDNvJP4iUyLaNlewqHFhcrlZAMTcWOl/exec";
-    const APP_VERSION = "20260317-002";
+    const APP_VERSION = "20260319-001";
 
     let liffReady = false;
     let pageMode = "create"; // create | edit
@@ -433,11 +433,15 @@
 
     function setSubmitLoading(isLoading) {
       const btn = document.getElementById("submitBtn");
+      const cancelBtn = document.getElementById("cancelBookingBtn");
+
       if (isLoading) {
         btn.disabled = true;
+        cancelBtn.disabled = true;
         btn.innerHTML = '<span class="loading-inline"><span class="spinner"></span>送出中...</span>';
       } else {
         btn.disabled = false;
+        cancelBtn.disabled = false;
         btn.innerText = pageMode === "edit" ? "確認修改" : "送出預約";
       }
     }
@@ -496,41 +500,55 @@
 
         if (!liff.isLoggedIn()) {
           setStatus("3. 尚未登入 LINE，正在導向登入...");
-          liff.login();
+          liff.login({ redirectUri: location.href });
           return;
         }
 
         setStatus("4. 已登入，正在取得 LINE 身分資料...");
 
         const profile = await liff.getProfile();
+
         document.getElementById("userId").value = profile.userId || "";
         document.getElementById("displayName").value = profile.displayName || "";
 
         liffReady = true;
+        document.getElementById("status").style.display = "none";
 
-        // 判斷是否為修改模式
-        const mode = getQueryParam("mode");
-        const bookingId = getQueryParam("bookingId");
+        await loadEditBookingIfNeeded();
+      } catch (err) {
+        const msg = String(err && err.message ? err.message : err);
 
-        if (mode === "edit" && bookingId) {
-          pageMode = "edit";
-          document.getElementById("bookingId").value = bookingId;
-          applyEditModeUI();
-          await loadBookingForEdit(bookingId, profile.userId || "");
+        if (msg.includes("access token expired") || msg.includes("The access token expired")) {
+          setStatus("LINE 登入已過期，正在重新登入...");
+          try {
+            if (liff.isLoggedIn()) liff.logout();
+          } catch (_) {}
+          liff.login({ redirectUri: location.href });
+          return;
         }
 
-        document.getElementById("status").style.display = "none";
-      } catch (err) {
         setStatus(
           "LINE 初始化失敗\n" +
-          "message: " + (err.message || err) + "\n" +
+          "message: " + msg + "\n" +
           "目前網址: " + location.href,
           "err"
         );
       }
     }
 
-    async function loadBookingForEdit(bookingId, lineUserId) {
+    async function loadEditBookingIfNeeded() {
+      const mode = getQueryParam("mode");
+      const bookingId = getQueryParam("bookingId");
+
+      if (mode !== "edit" || !bookingId) return;
+      if (!liffReady) return;
+
+      pageMode = "edit";
+      document.getElementById("bookingId").value = bookingId;
+      applyEditModeUI();
+
+      const lineUserId = document.getElementById("userId").value;
+
       try {
         setStatus("載入原預約資料中...");
 
@@ -539,13 +557,10 @@
         url.searchParams.set("bookingId", bookingId);
         url.searchParams.set("lineUserId", lineUserId);
 
-        const res = await fetch(url.toString(), {
-          method: "GET"
-        });
-
+        const res = await fetch(url.toString(), { method: "GET" });
         const text = await res.text();
-        let result = {};
 
+        let result = {};
         try {
           result = JSON.parse(text);
         } catch (e) {
@@ -556,9 +571,9 @@
           throw new Error(result.error || result.message || "讀取預約資料失敗");
         }
 
-        const d = result.data;
+        const d = result.data || {};
         document.getElementById("name").value = d.name || "";
-        document.getElementById("phone").value = d.phone || "";
+        document.getElementById("phone").value = (d.phone || "").replace(/^'/, "");
         document.getElementById("visitDate").value = d.visitDate || "";
         document.getElementById("time").value = d.bookingTime || "";
         document.getElementById("people").value = d.people || "1";
@@ -632,8 +647,6 @@
       setSubmitLoading(true);
       setStatus("資料送出中，請稍候...");
 
-      const bookingTime = document.getElementById("time").value;
-
       const payload = {
         action: pageMode === "edit" ? "update_booking" : "create_booking",
         bookingId: document.getElementById("bookingId").value,
@@ -642,7 +655,7 @@
         "姓名": document.getElementById("name").value.trim(),
         "手機": document.getElementById("phone").value.trim(),
         "預約日期": document.getElementById("visitDate").value,
-        "預約時段": bookingTime,
+        "預約時段": document.getElementById("time").value,
         "參觀人數": document.getElementById("people").value,
         "體驗產品": document.getElementById("product").value,
         "備註": document.getElementById("note").value.trim()
